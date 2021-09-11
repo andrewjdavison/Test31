@@ -13,10 +13,23 @@ struct PersistenceController {
     static var preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
-        for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+        
+        let newRegister = Register(context: viewContext)
+        newRegister.id = UUID()
+        
+        for i in 0..<10 {
+            let newLicence = Licence(context: viewContext)
+            newLicence.id = UUID()
+            newLicence.leasee = "Leasee \(i)"
+            
+            let newElement = Element(context: viewContext)
+            newElement.id = UUID()
+            newElement.desc = "Switch \(i)"
+            newLicence.licenced = newElement
+            
+            newRegister.addToLicencedUsers(newLicence)
         }
+        
         do {
             try viewContext.save()
         } catch {
@@ -27,7 +40,48 @@ struct PersistenceController {
         }
         return result
     }()
+    
+    func deleteAllObjectsInCoreData() {
+   
+        let entities = self.container.managedObjectModel.entities
+        
+        for entity in entities
+        {
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+            let managedObjects:[NSManagedObject] = try! self.container.viewContext.fetch(fetchRequest) as! [NSManagedObject]
+            
+            for managedObject in managedObjects {
+                self.container.viewContext.delete(managedObject)
+            }
+        }
+        try! self.container.viewContext.save()
+    }
 
+    func initData() {
+        
+        deleteAllObjectsInCoreData()
+        
+        let viewContext = container.viewContext
+        
+        let newRegister = Register(context: viewContext)
+        newRegister.id = UUID()
+        
+        for i in 0..<10 {
+            let newLicence = Licence(context: viewContext)
+            newLicence.id = UUID()
+            newLicence.leasee = "Leasee \(i)"
+            
+            let newElement = Element(context: viewContext)
+            newElement.id = UUID()
+            newElement.desc = "Switch \(i)"
+            newLicence.licenced = newElement
+            
+            newRegister.addToLicencedUsers(newLicence)
+        }
+    }
+    
+
+    
     let container: NSPersistentContainer
 
     init(inMemory: Bool = false) {

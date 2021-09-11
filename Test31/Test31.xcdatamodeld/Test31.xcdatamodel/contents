@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="false" userDefinedModelVersionIdentifier="">
-    <entity name="Item" representedClassName="Item" syncable="YES" codeGenerationType="class">
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19197" systemVersion="21A5506j" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Element" representedClassName="Element" syncable="YES" codeGenerationType="class">
+        <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="licenceHolders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Licence" inverseName="licenced" inverseEntity="Licence"/>
+    </entity>
+    <entity name="Licence" representedClassName="Licence" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="leasee" optional="YES" attributeType="String"/>
+        <relationship name="licenced" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Element" inverseName="licenceHolders" inverseEntity="Element"/>
+        <relationship name="registeredWith" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Register" inverseName="licencedUsers" inverseEntity="Register"/>
+    </entity>
+    <entity name="Register" representedClassName="Register" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="licencedUsers" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Licence" inverseName="registeredWith" inverseEntity="Licence"/>
     </entity>
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="44"/>
+        <element name="Element" positionX="211.26953125" positionY="-74.28515625" width="128" height="88"/>
+        <element name="Licence" positionX="-26.8671875" positionY="-185.734375" width="128" height="103"/>
+        <element name="Register" positionX="-267.40625" positionY="-219.40234375" width="128" height="73"/>
     </elements>
 </model>
