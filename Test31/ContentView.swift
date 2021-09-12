@@ -11,8 +11,9 @@ import CoreData
 
 struct LicenceView : View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment (\.presentationMode) var presentationMode
+    
     @ObservedObject var licence: Licence
-    @Binding var showModal: Bool
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Element.desc, ascending: true)],
@@ -21,18 +22,18 @@ struct LicenceView : View {
     
     func save() {
         try! viewContext.save()
-        showModal = false
+        presentationMode.wrappedValue.dismiss()
     }
     
     var body: some View {
         VStack {
-            Button(action: {showModal = false}) {
+            Button(action: {presentationMode.wrappedValue.dismiss()}) {
                 Text("Close")
             }
             Picker(selection: $licence.licenced, label: Text("Element")) {
                 ForEach(elements, id: \.self) { element in
                     Text("\(element.desc!)")
-                        .tag(element)
+                        .tag(element as Element?)
                 }
             }
             Text("Selected: \(licence.licenced!.desc!)")
@@ -40,38 +41,21 @@ struct LicenceView : View {
                 Text("Save")
             }
         }
-        
     }
 }
 
 struct RegisterView : View {
     @Environment(\.managedObjectContext) private var viewContext
-
-    @State var showModal: Bool = false
+    
     @ObservedObject var register: Register
-    
-    @ObservedObject var currentLicence: Licence
-    
-    @State var id : UUID = UUID()
-    
-    init(currentRegister: Register) {
-        self.register = currentRegister
-        currentLicence = Array(currentRegister.licencedUsers! as! Set<Licence>)[0]
-
-    }
-    
-    func viewDismissed() {
-        id = UUID()
-    }
+    @State var currentLicence : Licence?
     
     var body: some View {
-        var currentL = Array(register.licencedUsers! as! Set<Licence>)[0]
-        
         VStack {
             List {
                 ForEach (Array(register.licencedUsers! as! Set<Licence>)
                             .sorted(by: {$0.leasee! < $1.leasee!}), id: \.self) { licence in
-                    Button(action: {currentL = licence; showModal = true}) {
+                    Button(action: {currentLicence = licence}) {
                         HStack {
                             Text("\(licence.leasee!) : ")
                             Text("\(licence.licenced!.desc!)")
@@ -80,12 +64,11 @@ struct RegisterView : View {
                 }
             }
         }
-        .sheet(isPresented: $showModal, onDismiss: viewDismissed) {
-            LicenceView(licence: currentL, showModal: $showModal )
-        }.id(id)
+        .sheet(item: $currentLicence) { item  in
+            LicenceView(licence: item)
+        }
     }
 }
-
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -100,7 +83,7 @@ struct ContentView: View {
             NavigationView {
                 List {
                     ForEach(registers) { register in
-                        NavigationLink(destination: RegisterView(currentRegister: register)) {
+                        NavigationLink(destination: RegisterView(register: register)) {
                             Text("Register id \(register.id!)")
                         }
                     }
